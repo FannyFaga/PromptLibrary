@@ -1,0 +1,58 @@
+export const defaultPrompts = [
+  {
+    id: '1',
+    title: 'Blog Post Writer',
+    category: 'Writing',
+    tags: ['blog', 'content', 'SEO'],
+    text: 'Write a detailed and engaging blog post about [topic]. Include an introduction, 3 main sections with subheadings, and a conclusion. Use a conversational tone and aim for 800 words.',
+    favorite: false,
+    createdAt: '2024-01-10T09:00:00.000Z',
+  },
+  {
+    id: '2',
+    title: 'Code Reviewer',
+    category: 'Coding',
+    tags: ['review', 'debugging', 'best-practices'],
+    text: 'Review the following code and provide detailed feedback on: 1) bugs and errors, 2) performance improvements, 3) best practices and clean code principles, 4) security concerns. Code: [paste code here]',
+    favorite: true,
+    createdAt: '2024-01-11T10:30:00.000Z',
+  },
+  {
+    id: '3',
+    title: 'Marketing Email',
+    category: 'Marketing',
+    tags: ['email', 'copywriting', 'CTA'],
+    text: 'Write a compelling marketing email for [product/service]. Include a catchy subject line, personalized greeting, value proposition, social proof, and a clear call-to-action. Keep it under 200 words.',
+    favorite: false,
+    createdAt: '2024-01-12T14:00:00.000Z',
+  },
+  {
+    id: '4',
+    title: 'Meeting Summarizer',
+    category: 'Productivity',
+    tags: ['meetings', 'notes', 'action-items'],
+    text: 'Summarize the following meeting notes into: key decisions made, action items with owners and deadlines, and open questions. Format as a bulleted list. Notes: [paste notes here]',
+    favorite: true,
+    createdAt: '2024-01-13T08:00:00.000Z',
+  },
+  {
+    id: '5',
+    title: 'SQL Query Builder',
+    category: 'Coding',
+    tags: ['SQL', 'database', 'optimization'],
+    text: 'Write an optimized SQL query to [describe what you need]. Include proper indexing suggestions and explain the query logic step by step.',
+    favorite: false,
+    createdAt: '2024-01-14T11:00:00.000Z',
+  },
+  {
+    id: '6',
+    title: 'Social Media Caption',
+    category: 'Marketing',
+    tags: ['social', 'captions', 'hashtags'],
+    text: 'Create 5 engaging social media captions for [topic/product]. Each caption should be tailored for a different platform (Instagram, Twitter/X, LinkedIn, Facebook, TikTok). Include relevant hashtags.',
+    favorite: false,
+    createdAt: '2024-01-15T16:00:00.000Z',
+  },
+]
+
+export const CATEGORIES = ['All', 'Writing', 'Coding', 'Marketing', 'Productivity', 'Other']
