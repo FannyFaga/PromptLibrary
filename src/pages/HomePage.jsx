@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { usePrompts } from '../context/PromptContext'
 import { CATEGORIES } from '../data/defaultPrompts'
@@ -11,6 +12,16 @@ import StatsBar from '../components/StatsBar'
 
 export default function HomePage() {
   const { prompts, loading, error } = usePrompts()
+
+  // Build dynamic category list: base categories + any custom ones from prompts
+  const allCategories = useMemo(() => {
+    const base = new Set(CATEGORIES)
+    prompts.forEach((p) => { if (p.category && !base.has(p.category)) base.add(p.category) })
+    // Keep "All" first, then known categories, then custom ones sorted
+    const known = CATEGORIES.filter((c) => base.has(c))
+    const custom = [...base].filter((c) => !CATEGORIES.includes(c)).sort()
+    return [...known, ...custom]
+  }, [prompts])
 
   // All search + filter state lives in the hook — no useState needed here
   const {
@@ -88,7 +99,7 @@ export default function HomePage() {
       {/* ── Category Filter ── */}
       <div id="category-filter">
         <CategoryFilter
-          categories={CATEGORIES}
+          categories={allCategories}
           active={activeCategory}
           onSelect={setCategory}
           counts={categoryCounts}

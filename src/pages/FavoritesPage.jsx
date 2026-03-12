@@ -3,6 +3,15 @@ import { Link } from 'react-router-dom'
 import { usePrompts } from '../context/PromptContext'
 import { CATEGORIES } from '../data/defaultPrompts'
 import { useSearch } from '../hooks/useSearch'
+
+/** Merge base CATEGORIES with any custom ones found in the given prompts. */
+function buildCategories(prompts) {
+  const base = new Set(CATEGORIES)
+  prompts.forEach((p) => { if (p.category && !base.has(p.category)) base.add(p.category) })
+  const known  = CATEGORIES.filter((c) => base.has(c))
+  const custom = [...base].filter((c) => !CATEGORIES.includes(c)).sort()
+  return [...known, ...custom]
+}
 import SearchBar from '../components/SearchBar'
 import CategoryFilter from '../components/CategoryFilter'
 import SortSelect from '../components/SortSelect'
@@ -15,6 +24,7 @@ export default function FavoritesPage() {
   // Memoised so useSearch gets a stable reference and only re-runs when
   // the underlying prompts array actually changes.
   const favorites = useMemo(() => prompts.filter((p) => p.favorite), [prompts])
+  const favCategories = useMemo(() => buildCategories(favorites), [favorites])
 
   const {
     query,
@@ -66,7 +76,7 @@ export default function FavoritesPage() {
           <SearchBar value={query} onChange={setQuery} />
 
           <CategoryFilter
-            categories={CATEGORIES}
+            categories={favCategories}
             active={activeCategory}
             onSelect={setCategory}
             counts={categoryCounts}

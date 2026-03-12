@@ -6,6 +6,7 @@ import { CATEGORIES } from '../data/defaultPrompts'
 const FORM_CATEGORIES = CATEGORIES.filter((c) => c !== 'All')
 const TITLE_MAX = 80
 const TEXT_MAX  = 2000
+const CUSTOM_CAT_MAX = 30
 
 // ── Helper: tags string ↔ array ──────────────────────────────────────────────
 const tagsToString = (tags) => (Array.isArray(tags) ? tags.join(', ') : tags || '')
@@ -23,6 +24,10 @@ function validate(form) {
     errors.title = `Title must be ${TITLE_MAX} characters or fewer.`
   if (!form.category)
     errors.category = 'Please select a category.'
+  else if (form.category === 'Other' && !form.customCategory.trim())
+    errors.customCategory = 'Please specify your custom category.'
+  else if (form.category === 'Other' && form.customCategory.length > CUSTOM_CAT_MAX)
+    errors.customCategory = `Category name must be ${CUSTOM_CAT_MAX} characters or fewer.`
   if (!form.text.trim())
     errors.text = 'Prompt content is required.'
   else if (form.text.length > TEXT_MAX)
@@ -100,11 +105,15 @@ export default function PromptForm({ initialData = {}, onSubmit, mode = 'add' })
   const navigate = useNavigate()
 
   // ── Controlled state ────────────────────────────────────────────────────
+  // If the existing prompt has a category not in the predefined list, treat it
+  // as a custom "Other" category and prefill the custom field.
+  const isCustomInit = initialData.category && !FORM_CATEGORIES.includes(initialData.category)
   const [form, setForm] = useState({
-    title:    initialData.title    || '',
-    category: initialData.category || '',   // empty → forces an explicit selection
-    tags:     tagsToString(initialData.tags),
-    text:     initialData.text     || '',
+    title:          initialData.title    || '',
+    category:       isCustomInit ? 'Other' : (initialData.category || ''),
+    customCategory: isCustomInit ? initialData.category : '',
+    tags:           tagsToString(initialData.tags),
+    text:           initialData.text     || '',
   })
 
   // errors  — validation messages keyed by field name
@@ -118,10 +127,19 @@ export default function PromptForm({ initialData = {}, onSubmit, mode = 'add' })
   const handleChange = (e) => {
     const { name, value } = e.target
     const next = { ...form, [name]: value }
+    // Clear custom category when switching to a non-Other category
+    if (name === 'category' && value !== 'Other') {
+      next.customCategory = ''
+    }
     setForm(next)
     if (touched[name]) {
       const errs = validate(next)
       setErrors((prev) => ({ ...prev, [name]: errs[name] || '' }))
+    }
+    // Also re-validate customCategory when category changes
+    if (name === 'category' && touched.customCategory) {
+      const errs = validate(next)
+      setErrors((prev) => ({ ...prev, customCategory: errs.customCategory || '' }))
     }
   }
 
@@ -143,7 +161,18 @@ export default function PromptForm({ initialData = {}, onSubmit, mode = 'add' })
     const errs = validate(form)
     setErrors(errs)
     if (Object.keys(errs).length > 0) return
-    onSubmit({ ...form, tags: stringToTags(form.tags) })
+
+    // Resolve the final category — use custom text when "Other" was picked
+    const finalCategory = form.category === 'Other' && form.customCategory.trim()
+      ? form.customCategory.trim()
+      : form.category
+
+    onSubmit({
+      title: form.title,
+      category: finalCategory,
+      tags: stringToTags(form.tags),
+      text: form.text,
+    })
   }
 
   // ── Shared style helpers ─────────────────────────────────────────────────
@@ -244,7 +273,35 @@ export default function PromptForm({ initialData = {}, onSubmit, mode = 'add' })
 
         <FieldError id="category-error" message={touched.category ? errors.category : ''} />
 
-        {!(errors.category && touched.category) && (
+        {/* ── Custom category input (shown when "Other" is selected) ── */}
+        {form.category === 'Other' && (
+          <div className="mt-3">
+            <label htmlFor="customCategory" className="block text-sm font-medium text-slate-700 mb-1.5">
+              Custom Category Name <Required />
+            </label>
+            <input
+              id="customCategory"
+              name="customCategory"
+              type="text"
+              value={form.customCategory}
+              onChange={handleChange}
+              onBlur={handleBlur}
+              placeholder="e.g. Design, Education, Finance…"
+              maxLength={CUSTOM_CAT_MAX + 5}
+              aria-invalid={!!errors.customCategory}
+              aria-describedby={errors.customCategory ? 'customCategory-error' : undefined}
+              className={`${inputBase} ${fieldState('customCategory')}`}
+            />
+            <FieldError id="customCategory-error" message={touched.customCategory ? errors.customCategory : ''} />
+            {!(errors.customCategory && touched.customCategory) && (
+              <p className="mt-1 text-xs text-slate-400">
+                Enter the category that best describes your prompt.
+              </p>
+            )}
+          </div>
+        )}
+
+        {!(errors.category && touched.category) && form.category !== 'Other' && (
           <p className="mt-1 text-xs text-slate-400">
             Choose the category that best fits this prompt.
           </p>
